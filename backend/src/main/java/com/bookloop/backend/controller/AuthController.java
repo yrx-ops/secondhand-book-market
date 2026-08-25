@@ -1,5 +1,6 @@
 package com.bookloop.backend.controller;
 
+import com.bookloop.backend.dto.LoginDTO;
 import com.bookloop.backend.dto.RegisterDTO;
 import com.bookloop.backend.service.UserService;
 import com.bookloop.backend.vo.UserVO;
@@ -22,5 +23,10 @@ public class AuthController {
     @PostMapping("/register")
     public UserVO register(@Valid @RequestBody RegisterDTO registerDTO) {
         return userService.register(registerDTO);
+    }
+
+    @PostMapping("/login")
+    public UserVO login(@Valid @RequestBody LoginDTO loginDTO) {
+        return userService.login(loginDTO);
     }
 }

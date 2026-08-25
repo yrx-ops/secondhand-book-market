@@ -1,6 +1,7 @@
 package com.bookloop.backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.bookloop.backend.dto.LoginDTO;
 import com.bookloop.backend.dto.RegisterDTO;
 import com.bookloop.backend.entity.User;
 import com.bookloop.backend.mapper.UserMapper;
@@ -45,6 +46,23 @@ public class UserServiceImpl implements UserService {
         user.setStatus(1);
 
         userMapper.insert(user);
+        return convertToVO(user);
+    }
+
+    @Override
+    public UserVO login(LoginDTO loginDTO) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, loginDTO.getUsername());
+        User user = userMapper.selectOne(wrapper);
+
+        if (user == null) {
+            throw new RuntimeException("用户名或密码错误");
+        }
+
+        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("用户名或密码错误");
+        }
+
         return convertToVO(user);
     }
 
