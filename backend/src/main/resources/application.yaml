@@ -10,3 +10,7 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationMustBeLongEnough2024}
+  expiration: 86400000

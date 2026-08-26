@@ -6,6 +6,8 @@ import com.bookloop.backend.dto.RegisterDTO;
 import com.bookloop.backend.entity.User;
 import com.bookloop.backend.mapper.UserMapper;
 import com.bookloop.backend.service.UserService;
+import com.bookloop.backend.util.JwtUtil;
+import com.bookloop.backend.vo.LoginVO;
 import com.bookloop.backend.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +23,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public List<UserVO> listUsers() {
@@ -50,7 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserVO login(LoginDTO loginDTO) {
+    public LoginVO login(LoginDTO loginDTO) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, loginDTO.getUsername());
         User user = userMapper.selectOne(wrapper);
@@ -63,7 +68,12 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("用户名或密码错误");
         }
 
-        return convertToVO(user);
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername());
+
+        LoginVO loginVO = new LoginVO();
+        loginVO.setToken(token);
+        loginVO.setUser(convertToVO(user));
+        return loginVO;
     }
 
     private UserVO convertToVO(User user) {
