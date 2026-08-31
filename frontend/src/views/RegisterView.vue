@@ -1,39 +1,45 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { login } from '../api/auth'
-import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
-const authStore = useAuthStore()
 
 const username = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const errorMessage = ref('')
 const loading = ref(false)
 
-async function handleLogin() {
+async function handleRegister() {
   errorMessage.value = ''
 
-  if (!username.value || !password.value) {
-    errorMessage.value = '请输入用户名和密码'
+  if (!username.value || !password.value || !confirmPassword.value) {
+    errorMessage.value = '请填写所有必填项'
+    return
+  }
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = '两次输入的密码不一致'
+    return
+  }
+
+  if (password.value.length < 6) {
+    errorMessage.value = '密码长度不能少于 6 位'
     return
   }
 
   loading.value = true
 
   try {
-    const res = await login({
-      username: username.value,
-      password: password.value,
-    })
-    authStore.setLogin(res.token, res.user)
-    router.push('/')
+    // TODO: 接后端注册接口
+    // 暂时模拟注册成功，跳转到登录页
+    await new Promise((resolve) => setTimeout(resolve, 800))
+    router.push('/login')
   } catch (error: unknown) {
     if (error instanceof Error) {
       errorMessage.value = error.message
     } else {
-      errorMessage.value = '登录失败'
+      errorMessage.value = '注册失败，请重试'
     }
   } finally {
     loading.value = false
@@ -43,86 +49,96 @@ async function handleLogin() {
 
 <template>
   <div class="login-wrapper">
-  <div class="login-page">
-    <!-- 左侧品牌区域 -->
-    <div class="brand-side">
-      <div class="brand-content">
-        <h1 class="brand-name">BookLoop</h1>
-        <p class="brand-slogan">让闲置好书重新流动</p>
+    <div class="login-page">
+      <!-- 左侧品牌区域 -->
+      <div class="brand-side">
+        <div class="brand-content">
+          <h1 class="brand-name">BookLoop</h1>
+          <p class="brand-slogan">让闲置好书重新流动</p>
+        </div>
+
+        <!-- 装饰书架 -->
+        <div class="bookshelf">
+          <div class="shelf">
+            <div class="book book-1"></div>
+            <div class="book book-2"></div>
+            <div class="book book-3"></div>
+            <div class="book book-4"></div>
+            <div class="book book-5"></div>
+          </div>
+          <div class="shelf">
+            <div class="book book-3"></div>
+            <div class="book book-1"></div>
+            <div class="book book-6"></div>
+            <div class="book book-2"></div>
+          </div>
+          <div class="shelf">
+            <div class="book book-4"></div>
+            <div class="book book-6"></div>
+            <div class="book book-1"></div>
+            <div class="book book-3"></div>
+            <div class="book book-2"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- 装饰书架 -->
-      <div class="bookshelf">
-        <div class="shelf">
-          <div class="book book-1"></div>
-          <div class="book book-2"></div>
-          <div class="book book-3"></div>
-          <div class="book book-4"></div>
-          <div class="book book-5"></div>
+      <!-- 右侧注册卡片 -->
+      <div class="login-side">
+        <div class="login-card">
+          <h2 class="card-title">注册</h2>
+          <p class="card-subtitle">创建账号，开始你的二手书之旅</p>
+
+          <form @submit.prevent="handleRegister" class="login-form">
+            <div class="form-group">
+              <label for="username">用户名</label>
+              <input
+                id="username"
+                v-model="username"
+                type="text"
+                placeholder="请输入用户名"
+                autocomplete="username"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">密码</label>
+              <input
+                id="password"
+                v-model="password"
+                type="password"
+                placeholder="请输入密码（至少 6 位）"
+                autocomplete="new-password"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">确认密码</label>
+              <input
+                id="confirmPassword"
+                v-model="confirmPassword"
+                type="password"
+                placeholder="请再次输入密码"
+                autocomplete="new-password"
+              />
+            </div>
+
+            <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+            <button type="submit" class="login-btn" :disabled="loading">
+              {{ loading ? '注册中...' : '注册' }}
+            </button>
+
+            <p class="switch-page">
+              已有账号？<router-link to="/login">立即登录</router-link>
+            </p>
+          </form>
         </div>
-        <div class="shelf">
-          <div class="book book-3"></div>
-          <div class="book book-1"></div>
-          <div class="book book-6"></div>
-          <div class="book book-2"></div>
-        </div>
-        <div class="shelf">
-          <div class="book book-4"></div>
-          <div class="book book-6"></div>
-          <div class="book book-1"></div>
-          <div class="book book-3"></div>
-          <div class="book book-2"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 右侧登录卡片 -->
-    <div class="login-side">
-      <div class="login-card">
-        <h2 class="card-title">登录</h2>
-        <p class="card-subtitle">欢迎回来，请登录您的账号</p>
-
-        <form @submit.prevent="handleLogin" class="login-form">
-          <div class="form-group">
-            <label for="username">用户名</label>
-            <input
-              id="username"
-              v-model="username"
-              type="text"
-              placeholder="请输入用户名"
-              autocomplete="username"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password">密码</label>
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              placeholder="请输入密码"
-              autocomplete="current-password"
-            />
-          </div>
-
-          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-
-          <button type="submit" class="login-btn" :disabled="loading">
-            {{ loading ? '登录中...' : '登录' }}
-          </button>
-
-          <p class="switch-page">
-            还没有账号？<router-link to="/register">立即注册</router-link>
-          </p>
-        </form>
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <style scoped>
-/* 页面整体居中，限制最大宽度 */
 .login-wrapper {
   display: flex;
   justify-content: center;
@@ -130,14 +146,12 @@ async function handleLogin() {
   min-height: 100vh;
 }
 
-/* 两栏容器 */
 .login-page {
   display: flex;
   width: 100%;
   max-width: 1100px;
 }
 
-/* 左侧品牌区 */
 .brand-side {
   flex: 0 0 55%;
   background: linear-gradient(160deg, #fdf6ec 0%, #e8d5c4 100%);
@@ -174,7 +188,6 @@ async function handleLogin() {
   letter-spacing: 3px;
 }
 
-/* 书架装饰 */
 .bookshelf {
   position: relative;
   z-index: 2;
@@ -203,7 +216,6 @@ async function handleLogin() {
 .book-5 { width: 28px; height: 90px; background: #d7ccc8; }
 .book-6 { width: 22px; height: 80px; background: #795548; }
 
-/* 右侧登录区 */
 .login-side {
   flex: 0 0 45%;
   display: flex;
@@ -212,7 +224,6 @@ async function handleLogin() {
   padding: 60px 56px;
 }
 
-/* 登录卡片 */
 .login-card {
   width: 100%;
   max-width: 400px;
@@ -236,7 +247,6 @@ async function handleLogin() {
   margin: 0 0 36px;
 }
 
-/* 表单 */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -279,7 +289,6 @@ async function handleLogin() {
   background: #ffffff;
 }
 
-/* 错误提示 */
 .error-message {
   font-size: 13px;
   color: #c0392b;
@@ -290,7 +299,6 @@ async function handleLogin() {
   border-left: 3px solid #c0392b;
 }
 
-/* 登录按钮 */
 .login-btn {
   width: 100%;
   height: 50px;
@@ -318,7 +326,6 @@ async function handleLogin() {
   cursor: not-allowed;
 }
 
-/* 切换页面链接 */
 .switch-page {
   text-align: center;
   font-size: 13px;
@@ -336,7 +343,6 @@ async function handleLogin() {
   text-decoration: underline;
 }
 
-/* 响应式：小屏幕下保持单栏 */
 @media (max-width: 768px) {
   .login-wrapper {
     align-items: flex-start;
